@@ -167,7 +167,6 @@ export default TInput
 ```jsx
 // components/TodoList/List.tsx
 import React, { FC, ReactElement } from 'react'
-import React, { FC, ReactElement } from 'react'
 
 import Item from './Item'
 import { ITodo } from './typings'
