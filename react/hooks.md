@@ -1,3 +1,5 @@
+[toc]
+
 # hooks
 
 ## 自定义hooks
@@ -200,24 +202,158 @@ function Demo () {
 
 ## 常见的自定义hooks
 
+经过上面的🌰，我们就会发现封装的好处，然后笔者在这里记录了一些常用的自定义`hooks`，有些地方设计可能有些不妥，欢迎大家指出。
+
 ### 防抖hooks useDebounceFn
 
-防抖和节流是日常开发中非常常见的功能，所以非常值得封装。
+防抖和节流是日常开发中非常常见的功能，而我们有时候希望我们的写的方法拥有防抖的效果，这时候就可以把防抖的逻辑抽离成一个`hooks`，以便于以后的复用。
 
 ```jsx
-import { useRef } from 'react'
+import { useRef, useCallback } from 'react'
 
-function useDebounceFn(fn, ms) {
+/**
+ * 防抖
+ * @param {Function} fn 
+ * @param {Number} ms 
+ * @param {Array} deps 
+ * @returns Function
+ */
+function useDebounceFn(fn, ms, deps = []) {
   let timer = useRef()
   
-  const debounce = (e) => {
+  const debounce = useCallback((arg) => {
     timer.current && clearTimeout(timer.current)
 
     timer.current = setTimeout(() => {
-      fn(e)
+      fn(arg)
     }, ms)
-  }
+  }, [fn, ms, ...deps])
 
   return debounce
 }
+```
+
+使用
+
+```jsx
+...
+
+function App() {
+
+  const [text, setText] = useState("")
+
+  const handleInput = useDebounceFn((v) => {
+    setText(v)
+  }, 500)
+
+  return (
+    <div className="App">
+      <input
+        onInput={e => handleInput(e.target.value)}
+      />
+      { text }
+    </div>
+  )
+}
+
+...
+```
+
+### 节流hooks useThrottleFn
+
+有防抖必然有节流，节流同样可以抽离成为一个单独的`hooks`，先来实现一个基本的节流`hooks`。
+
+```jsx
+...
+
+function useThrottleFn(fn, ms, deps = []) {
+  const timer = useRef(0)
+
+  const throttle = useCallback((arg) => {
+    let now = Date.now()
+    if(now - timer.current > ms){
+      fn(arg)
+      timer.current = now
+    }
+  }, [timer.current, ...deps])
+
+  return throttle
+}
+
+...
+```
+
+这样看起来好像是没什么问题，但是在我们平时的使用场景中，有些时候是希望节流方法在不能使用的时候给予一个友好的提示的，所以需要再扩展一下。
+
+```jsx
+...
+
+/**
+ * 节流
+ * @param {Function} fn 
+ * @param {Object|Number} options 
+ * @param {Array} deps 
+ * @returns Function
+ */
+function useThrottleFn(fn, options = {}, deps = []) {
+  const timer = useRef(0)
+  const ms = typeof options === 'number' ? options : options.ms
+
+  const throttle = useCallback((arg) => {
+    let now = Date.now()
+    if(now - timer.current > ms){
+      fn(arg)
+      timer.current = now
+    } else {
+      options?.onError && options.onError()
+    }
+  }, [timer.current, ...deps])
+
+  return throttle
+}
+
+...
+```
+
+使用
+
+```jsx
+...
+import { Table, Button, message } from 'antd'
+
+function App() {
+
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "id"
+    }
+  ]
+
+  const [data, setData] = useState([])
+
+  const search = useThrottleFn(() => {
+    setData([{ id: Math.random() }])
+  }, {
+    ms: 2000,
+    onError: () => {
+      message.error('操作太频繁了，请稍后再试！')
+    }
+  })
+
+  return (
+    <div>
+      <Button
+        onClick={() => search()}
+      >Search</Button>
+
+      <Table
+        columns={columns}
+        dataSource={data}
+      />
+    </div>
+  )
+}
+
+...
 ```
