@@ -325,12 +325,14 @@ function App () {
   const iptRef = useRef(null)
 
   const search = () => {
+    // 通过 iptRef.current 获取dom节点 
     const searchText = iptRef.current.value;
     console.log(searchText)
   }
 
   return (
     <div>
+      {/* 通过ref属性绑定dom */}
       <input
         ref={iptRef}
       />
@@ -346,7 +348,197 @@ function App () {
 
 上面案例中我们可以通过`iptRef.current`来获取到输入框的`dom`节点，从而获取输入框的内容。
 
-`useRef`可以储存任意类型的变量
+`useRef`可以储存任意类型的变量，但是需要知道**直接修改`current`属性不会刷新页面**
+
+```jsx
+...
+
+function Demo() {
+  const countRef = useRef(1)
+
+  const add = () => {
+    countRef.current += 1
+  }
+
+  // 点击不会刷新视图
+  return (
+    <div onClick={add}>{ countRef.current }</div>
+  )
+}
+```
+
+但是可以通过一些手段让视图进行更新，比如下面这样
+
+```jsx
+...
+
+function Demo() {
+  const countRef = useRef(1)
+  const [, set] = useState()
+
+  const add = () => {
+    set({}) // 使用set强制刷新视图
+    countRef.current += 1
+  }
+
+  // 点击会刷新视图
+  return (
+    <div onClick={add}>{ countRef.current }</div>
+  )
+}
+```
+
+这样其实并没有什么太大的意义，如果需要视图随数据更新直接使用`useState`更加合适
+
+### useReducer
+
+`useReducer`这个hooks使用的并不算太多，但是一些场景用它确实要比`useState`更合适
+
+语法：
+
+```jsx
+const [state, dispatch] = useReducer(reducer, initialState, [init])
+```
+
+其中，`reducer`必须是一个**纯函数**，而`initialState`则是我们仓库数据的初始状态，第三个参数`init`是可传的函数用于惰性初始化。而这个`hooks`返回一个数组，返回数组的第一项就是我们的仓库，第二项是一个`dispatch`，我们可以使用`dispatch`去派发一个`action`来更新仓库的数据。
+
+在这里需要解释一下纯函数的定义：
+
+1. 在函数输入相同的参数时，输出的结果相同。函数的输出和输入值以外的其他隐藏信息或状态无关，也和I/O设备产生的外部输出无关。
+2. 该函数不能有语义化上可观察的函数副作用，诸如“触发事件”，使输出设备输出，或更改输出值以外物件的内容等。
+
+可能看起来很复杂，但是其实就两点：
+
+1. 确定的输入值一定会产生确定的输出。
+2. 函数执行过程中不能产生副作用。
+
+然后可以看一个阉割版的`todolist`案例
+
+```jsx
+...
+
+// 定义初始化仓库
+const initialState = {
+  list: []
+}
+
+// 定义需要触发的action
+const actions = {
+  INSERT: "INSERT",
+  DELETE: "DELETE",
+  UPDATE: "UPDATE"
+}
+
+// 定义reducer
+function reducer(state, action){
+  const { type, payload } = action;
+  switch(type){
+    case actions.INSERT:
+      return { 
+        ...state,
+        list: [...state.list, payload] 
+      }
+    case actions.UPDATE:
+      return {  
+        ...state,
+        list: state.list.map(item => {
+          return item.id === payload.id ? payload : item;
+        })
+      }
+    case actions.DELETE:
+      return {
+        ...state,
+        list: state.list.filter(item => item.id !== payload)
+      }
+    default:
+      return state
+  }
+}
+
+function Demo(){
+  const [state, dispatch] = useReducer(reducer, initialState)
+
+  const add = () => {
+    dispatch({
+      type: actions.INSERT,
+      payload: { id: Date.now(), content: `INSERT at ${Date.now()}` }
+    })
+  }
+
+  const del = (id) => {
+    dispatch({
+      type: actions.DELETE,
+      payload: id
+    })
+  }
+
+  const update = (id) => {
+    dispatch({
+      type: actions.UPDATE,
+      payload: { id: id, content: `UPDATE at ${Date.now()}` }
+    })
+  }
+
+  return (
+    <div>
+      <div>
+        <button onClick={add}>ADD</button>
+      </div>
+      <ul>
+        {
+          state.list.map(item => {
+            return (
+              <li
+                key={item.id}
+              >
+                { item.content }
+                <button onClick={() => update(item.id)}>UPDATE</button>
+                <button onClick={() => del(item.id)}>DELETE</button>
+              </li>
+            )
+          })
+        }
+      </ul>
+    </div>
+  );
+}
+```
+
+通过案例我们可以看到修改数据的操作只存在于`reducer`函数中，而在组件中我们只需要使用`dispatch`去派发不同的`action`就可以实现对数据不同的操作，并且我们可以发现案例中的`reducer`中在处理对应的`action`时都返回了一个新的对象，这是因为`useReducer`是对数据的内存地址进行的比较，如果内存地址没有发生改变的话视图是不会更新的，比如:
+
+```jsx
+...
+
+function reducer(state, action){
+  const { type, payload } = action;
+  switch(type){
+    case actions.INSERT:
+      state.list = [...state.list, payload]
+      return state // 返回的还是原对象，useReducer会以为数据没有变化，不会更新视图
+    // 省略...
+  }
+}
+
+...
+```
+
+在源码上`useReducer`的实现和`useState`是一样的，只是`useState`有一个默认的`action`而`useReducer`则是需要我们自己定义触发的`action`以及其对应的逻辑，在工作中笔者发现大多同事，包括我自己在内使用这个`hooks`都使用的并没有那么频繁，不过在处理复杂数据的时候`useReducer`确实要比`useState`好一些。
+
+另外就是惰性初始化，比如上面的例子如果用惰性初始化就需要改成这个样子
+
+```jsx
+...
+
+const init = (list) => ({ list })
+
+function Demo(){
+  const [state, dispatch] = useReducer(reducer, [], init)
+
+  ...
+}
+```
+
+第三个参数`init`会把第二个参数作为入参去计算出初始的`state`，这样便于后期重置`state`，最后`useReducer`是一个高级`hooks`没有它我们依旧可以完成需求，但是使用它可以增加代码的可读性。
 
 ## 自定义hooks
 
