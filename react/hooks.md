@@ -315,7 +315,7 @@ function App() {
 const refContainer = useRef(initialValue)
 ```
 
-可以通过返回对象的`current`属性获取初始值。我们可以用它来获取dom节点
+可以通过返回对象的`current`属性获取初始值(`initialValue`)。我们可以用它来获取dom节点
 
 ```jsx
 ...
@@ -344,7 +344,9 @@ function App () {
 ...
 ```
 
-上面案例中我们可以通过`iptRef.current`来获取到输入框节点，从而获取输入框的内容。
+上面案例中我们可以通过`iptRef.current`来获取到输入框的`dom`节点，从而获取输入框的内容。
+
+`useRef`可以储存任意类型的变量
 
 ## 自定义hooks
 
