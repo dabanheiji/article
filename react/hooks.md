@@ -542,7 +542,7 @@ function Demo(){
 
 ### useContext
 
-在`vue`中，一些场景经常会使用事件总线的方式来实现组件直接跨层级的传参，而在`react`中，则可以使用`useContext`这个`hooks`来解决这些问题。
+在日常开发中，我们经常会遇见一些场景需要组件之间跨层级的交流，而在`react`中，则可以使用`useContext`这个`hooks`来解决这些问题。
 
 语法：
 
