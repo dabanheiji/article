@@ -540,6 +540,130 @@ function Demo(){
 
 第三个参数`init`会把第二个参数作为入参去计算出初始的`state`，这样便于后期重置`state`，最后`useReducer`是一个高级`hooks`没有它我们依旧可以完成需求，但是使用它可以增加代码的可读性。
 
+### useContext
+
+在`vue`中，一些场景经常会使用事件总线的方式来实现组件直接跨层级的传参，而在`react`中，则可以使用`useContext`这个`hooks`来解决这些问题。
+
+语法：
+
+```jsx
+const value = useContext(MyContext)
+```
+
+`MyContext`是我们创建的`Context`，如果不了解`Context`可以先去查看一下[Context](https://react.docschina.org/docs/context.html)。
+
+基本使用
+
+```jsx
+import { useContext, createContext } from 'react'
+
+// 需要首先创建一个Context
+const InfoContext = createContext({
+  name: 'Jack',
+  age: 21
+})
+
+function App(){
+  return (
+    <div>
+      {/* 通过Provider 的value属性传递给子组件数据 */}
+      <InfoContext.Provider
+        value={{ name: 'Rose', age: 19 }}
+      >
+        <Child />
+      </InfoContext.Provider>
+    </div>
+  )
+}
+
+function Child(){
+  // 这里获取的数据是距离组件最近的Provider父组件传递过来的数据
+  // 如果到根组件都没有Provider父组件，那么会获取createContext时的初始值
+  const ctx = useContext(InfoContext)
+
+  return (
+    <pre>{ JSON.stringify(ctx) }</pre>
+  )
+}
+
+...
+```
+
+这个案例最终会在页面上渲染`{"name":"Rose","age":19}`，会和`Child`组件最近的一个`Provider`组件的`value`属性保持一致，这个`hooks`在工作中使用的也并不多，因为跨层级传参大多会直接将数据放入`redux`、`mobx`等状态管理中，所以真正使用的并不多，`useContext`和`useReducer`结合起来是可以实现一个简易的`redux`。
+
+#### useContext结合useReducer实现简易redux
+
+`useContext`实现跨层级传参，`useReducer`实现数据状态的控制，二者结合就能够实现简易的全局的状态管理
+
+实现：
+
+```jsx
+import { createContext, useReducer } from 'react'
+
+const initialState = {}
+
+export const GlobalContext = createContext({})
+
+function reducer(state, action){
+  const { type, payload } = action;
+  switch(type){
+    case 'update':
+      return { ...state, ...payload }
+  }
+}
+
+export const Provider = (props) => {
+  const [state, dispatch] = useReducer(reducer, initialState)
+
+  return (
+    <GlobalContext.Provider
+      value={{
+        state,
+        dispatch
+      }}
+    >
+      { props.children }
+    </GlobalContext.Provider>
+  )
+}
+```
+
+使用：
+
+```jsx
+import { useContext } from 'react'
+import { Provider, GlobalContext } from 'xxx路径'
+
+export default function App(){
+  return (
+    <Provider>
+      <Child />
+      <Button/>
+    </Provider>
+  )
+}
+
+function Child(){
+  const { state } = useContext(GlobalContext)
+
+  return (
+    <pre>{ JSON.stringify(state) }</pre>
+  )
+}
+
+function Button(){
+  const { dispatch } = useContext(GlobalContext)
+
+  return (
+    <button
+      onClick={() => dispatch({ type: 'update', payload: { time: Date.now() } })}
+    >update</button>
+  )
+}
+```
+
+使用`Context`将`useReducer`的`state`与`dispatch`共享到各个组件中，再利用`dispatch`修改`state`从而改变`context`这样就实现了一个简易版的`redux`。
+
 ## 自定义hooks
 
 随着自己使用react的时间越来越长，以及业务复杂度的提高，自己也是见识到了越来越多的优秀的react代码，也对hooks有了更深一步对理解。
