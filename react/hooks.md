@@ -664,11 +664,197 @@ function Button(){
 
 使用`Context`将`useReducer`的`state`与`dispatch`共享到各个组件中，再利用`dispatch`修改`state`从而改变`context`这样就实现了一个简易版的`redux`。
 
+### useCallback
+
+我们知道react中父组件`render`必然会引起子组件`render`，所以类组件中可以使用`PrueComponent`，而子组件则会使用`memo`，在使用`memo`之后只有父组件传入子组件的`props`改变才会引起子组件的重新`render`，如果父组件传入子组件一个引用类型的数据，由于父组件`render`的时候会重新生命这个引用类型的数据，这个时候即使是这个数据的内容没有发生改变由于引用地址的改变会导致子组件重新`render`，每次的重新`render`都会耗费性能，而`useCallback`和`useMemo`则是用于对这些场景的优化。
+
+我们常用的引用类型数据为`Array`、`Object`、`Function`，而我们经常会遇见为子组件传入一个函数事件的场景，这时候父组件`render`的时候即使没有修改子组件的状态，子组件也会重新`render`。
+
+🌰:
+
+```jsx
+import { memo, useState } from 'react'
+
+function Child({
+  onClick
+}){
+  // 父组件更新子组件也会render
+  console.log('Child render')
+
+  return (
+    <div
+      onClick={onClick}
+    >Child</div>
+  )
+}
+
+const ChildComponent = memo(Child)
+
+export default function App(){
+
+  const [count, setCount] = useState(1)
+
+  // 父组件每次render都会让onClick重新被声明
+  const onClick = () => {
+    alert('hello')
+  }
+
+  return (
+    <div>
+      <p>{ count }</p>
+      <button
+        onClick={() => setCount(x => x + 1)}
+      >+</button>
+
+      <hr />
+
+      <ChildComponent 
+        onClick={onClick}
+      />
+    </div>
+  )
+}
+```
+
+上面这个案例中我们点击父组件中的`button`和子组件是没有关系的，但是同样会引起子组件的`render`，这是因为父组件每次`render`都会重新生命`onClick`，尽管`onClick`的逻辑没有发生改变，但是储存它的内存地址已经改变，所以`react`会以为子组件的`props`中的状态发生了变化需要重新`render`，而`useCallback`则可以缓存我们的事件，来避免这种不必要的`render`。
+
+语法：
+
+```jsx
+const memoizedCallback  = useCallback(fn, deps)
+```
+
+其中`fn`是我们需要缓存的函数，`deps`则和`useEffect`的第二个参数一样，只有`deps`中的数据发生变化时，事件才会重新被声明。
+
+```jsx
+...
+
+export default function App(){
+
+  ...
+
+  // 父组件每次render都会让onClick重新被声明
+  const onClick = useCallback(() => {
+    alert('hello')
+  }, [])
+
+  ...
+}
+
+...
+```
+
+所以我们在使用`useCallback`包裹我们的事件之后，点击父组件中的`button`子组件就不会被重新`render`了，因为我们缓存的函数中没有使用外部变量，所以我们的依赖项放一个空数组就可以了，**如果使用了外部变量，则所有使用到的外部变量都需要放在依赖项中**。比如
+
+```jsx
+
+const [a, setA] = useState(2)
+const [b, setB] = useState(3)
+
+const handle = useCallback(() => {
+  console.log(a, b)
+}, [a, b])
+// 函数内部使用了a b两个变量，需要放在依赖项中
+```
+
+### useMemo
+
+`useMemo`和`useCallback`一样是一个用于优化的`hooks`，可以将`useMemo`理解为`vue`中的`computed`，它可以缓存一个通过一些计算逻辑计算出来的数据。
+
+语法：
+
+```jsx
+const value = useMemo(computeValue, deps)
+```
+
+其中`computeValue`是一个函数，在其中可以进行一系列运算逻辑，`deps`是依赖项。
+
+假设我们现在有这么一个场景，假设我们有一个列表页面，但是后端给的接口中数据是没有分页的，所以我们要自己分页，那么这个时候我们就需要一个逻辑去帮我们计算每一页对应的数据，这个时候就可以使用`useMemo`。
+
+```jsx
+import { useState, useMemo, useEffect } from 'react'
+
+// 获取列表数据
+function getData(total = 50){
+  const list = [];
+  
+  for(let i = 0; i < 50; i++) {
+    const item = {
+      id: i,
+      content: `Item ${i}`,
+    }
+
+    list.push(item);
+  }
+
+  return {
+    list,
+    total
+  }
+}
+
+export default function App() {
+  const [list, setList] = useState([])
+  const [total, setTotal] = useState(0)
+  const [pageNum, setPageNum] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
+  useEffect(() => {
+    const res = getData(50)
+    setList(res.list)
+    setTotal(res.total)
+  }, [])
+
+  // 计算总页数
+  const pageCount = useMemo(() => {
+    return Math.ceil(total / pageSize)
+  }, [total, pageSize])
+
+  // 当前页的数据
+  const activePageList = useMemo(() => {
+    return list.slice((pageNum - 1) * pageSize, pageNum * pageSize)
+  }, [list, pageNum, pageSize])
+
+  return (
+    <div>
+      <ul>
+        {
+          activePageList.map(item => (
+            <li
+              key={item.id}
+            >{ item.content }</li>
+          ))
+        }
+      </ul>
+
+      <div>
+        <button 
+          onClick={() => setPageNum(x => (x - 1 < 1 ? 1 : x - 1))}
+        >上一页</button>
+        <span>{ `${pageNum} / ${pageCount}` }</span>
+        <button 
+          onClick={() => setPageNum(x => (x + 1 > pageCount ? pageCount : x + 1))}
+        >下一页</button>
+        <select
+          onChange={e => {
+            setPageNum(1)
+            setPageSize(e.target.value)
+          }}
+        >
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+    </div>
+  )
+}
+```
+
+`useMemo`可以当作`vue`中的`computed`来使用，它会缓存我们计算的结果，可以避免每次`render`都去进行计算，它只有在我们传入的依赖项发生改变时才会去重新计算，所以我们一定要确定用于计算的变量都要写在依赖项中去。
+
 ## 自定义hooks
 
-随着自己使用react的时间越来越长，以及业务复杂度的提高，自己也是见识到了越来越多的优秀的react代码，也对hooks有了更深一步对理解。
-
-将业务逻辑抽离成为自定义hooks之后我们的组件内部会变得非常的干净，在后续维护的时候会轻松很多。
+上面是笔者在工作中使用比较多的一些`hooks`，随着业务复杂度的提高，仅依靠`react`提供的`hooks`虽然能够实现大部分需求，但是明显能感觉到代码看起来也变得不再优雅，甚至声明一堆`useState`也明显感觉十分不美观，不过好在笔者有一些优秀的同事，可以在工作之余去看一下别人的代码，也正因如此，自己也是见识到了越来越多的优秀的react代码，笔者发现一些同事会把一些请求逻辑从组件中抽离出来，在使用的时候也看起来十分清爽，为后期维护提供了很多便利。
 
 举个🌰：
 
@@ -795,9 +981,9 @@ const Demo = () => {
 export default Demo;
 ```
 
-笔者以前也是经常使用这种写法，但是随着页面中功能当日益丰富后面就发现这种写法会导致组件看起来过于臃肿，业务复杂的时候维护起来十分的麻烦。
+笔者以前也是经常使用这种写法，这个写法现在看起来还好，但是随着页面中功能当日益丰富后面就发现这种写法会导致组件看起来过于臃肿，我们有的时候需要声明很多的`useState`，业务复杂的时候维护起来十分的麻烦，尽管我们会进行一些抽离，但是依旧难免架不住一些场景还是会声明许多`useState`，仿佛想起了刚工作的时候维护`vue2.x`的项目的时候被六百多行的`data`支配的恐惧。
 
-然后笔者喜欢在没有需求的时候查看其他同事的代码，来学习其他人代码中比较好的设计思路，然后发现了一些大佬们的思路，然后醍醐灌顶，发现hooks原来应该这样用。
+然后在查看了一些同事的代码之后，笔者发现可以用下面这种写法来解决组件中各种乱七八糟的`useState`。
 
 ```jsx
 // 自定义hooks
@@ -831,7 +1017,7 @@ function useData () {
 }
 ```
 
-经过这样的抽离后，使用起来就会十分的方便。
+经过这样的抽离后，我们声明的`useState`全部被放在了`useData`中，然后我们在组件中只需要像下面这个使用就可以了，使用起来十分的方便，还有效的减少了组件中写的`useState`数量，并且这些变量的来源看起来也更加的清晰，笔者也是在这个时候理解了`vue3`为什么要使用`composition API`，因为使用起来真滴爽呀！
 
 ```js
 ...
@@ -849,6 +1035,7 @@ function Demo () {
       <Table
         columns={columns}
         dataSource={data}
+        rowKey="key"
         loading={loading}
       />
     </div>
@@ -858,9 +1045,7 @@ function Demo () {
 ...
 ```
 
-可以看到在使用的地方我们只需要从我们封装的`hooks`里将数据结构出来即可，这样组件内部也变得十分的清爽，抽离出来的自定义`hooks`要以`use`开头，遵循`hooks`规范。
-
-并且如果其他组件如果也需要调用这个接口的话直接使用我们封装的这个`hooks`就可以，真的是极大的提高了代码的复用性。
+从这个案例就可以看得出来，自定义`hooks`在只用的时候是真的特别的舒服，逻辑看起来清晰的同时也大大的提高了代码的复用性，另外在这里推荐一下阿里开源的`ahooks`，里面也是实现了大量优秀的`hooks`。
 
 ## 常见的自定义hooks
 
