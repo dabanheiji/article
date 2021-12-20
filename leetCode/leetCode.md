@@ -139,3 +139,158 @@ var addTwoNumbers = (l1, l2) => {
   return list.next;
 }
 ```
+
+## 无重复最长子子符串
+
+查找一个字符串中最长无重复的子字符串，思路：
+
+使用双指针，一个set集合，遍历字符串，如果集合中不存在该字符，将该字符存入set，使最大长度加一，如果set中存在该字符则已经开始重复，移除第二个指针当前对应元素后使第二个指针加1，然后继续判断，如此反复直至将字符串遍历完毕。
+
+```js
+/**
+ * 假设字符串为  "abcabcbb"
+ * 
+ * 使用 i j两个指针，起始都指向字符串的第一个字符
+ * 创建一个set集合
+ * 
+ * 遍历
+ * 第一次
+ * i -> "a"
+ * j -> "a"
+ * set {} 不存在 i 将 i对应字符 a 放入set 使 i 加1 更新最大长度 1 继续判断
+ * 
+ * 第二次
+ * i -> "b"
+ * j -> "a"
+ * set {"a"} 中不存在 i 将i对应字符 b 放入 set 使 i 加1 更新最大长度 2 继续
+ * 
+ * 第三次
+ * i -> "c"
+ * j -> "a"
+ * set {"a", "b"} 中不存在 i 将i对应字符 c 放入 set 使 i 加1 更新最大长度 3 继续
+ * 
+ * 第四次
+ * i -> "a"
+ * j -> "a"
+ * set {"a", "b", "c"} 存在 i 
+ * 则这个时候已经存在重复字符，将j对应元素删除，set {"b", "c"}
+ * set中此时不存在 i 将 i 存入set {"b", "c", "a"}
+ * 
+ * 第五次
+ * i -> "b"
+ * j -> "b"
+ * set {"b", "c", "a"} 存在 i 
+ * 则这个时候已经存在重复字符，将j对应元素删除，set {"c", "a"} j加1
+ * set中此时不存在 i 将 i 存入set {"c", "a", "b"}
+ * 
+ * 第六次
+ * i -> "c"
+ * j -> "c"
+ * set {"c", "a", "b"} 存在 i 
+ * 则这个时候已经存在重复字符，将j对应元素删除，set {"a", "b"} j加1
+ * set中此时不存在 i 将 i 存入set {"a", "b", "c"}
+ * 
+ * 第七次
+ * i -> "b"
+ * j -> "b"
+ * set {"a", "b", "c"} 存在 i 
+ * 则这个时候已经存在重复字符，将j对应元素删除，set {"b", "c"} j加1
+ * 这个时候set中仍存在 i 继续删除 set {"c"} j加1
+ * set中此时不存在 i 将 i 存入set {"c", "b"}
+ * 
+ * 第八次
+ * i -> "b"
+ * j -> "c"
+ * set {"a", "b", "c"} 存在 i 
+ * 则这个时候已经存在重复字符，将j对应元素删除，set {"c"} j加1
+ * 这个时候set中仍存在 i 继续删除 set {} j加1
+ * set中此时不存在 i 将 i 存入set {"c"}
+ * 
+ * 返回最大长度 3
+*/
+var lengthOfLongestSubstring = s => {
+  let len = s.length;
+
+  if (len === 0) {
+    return 0;
+  }
+
+  let set = new Set();
+  let i = 0, j = 0, maxLength = 1;
+
+  for(i; i < len; i++) {
+    if (!set.has(s[i])) {
+      set.add(s[i]);
+      maxLength = Math.max(maxLength, set.size);
+    } else {
+      while (set.has(s[i])) {
+        set.delete(s[j]);
+        j++;
+      }
+      set.add(s[i])
+    }
+  }
+
+  return maxLength
+}
+```
+
+## 最长回文子字符串
+
+解题思路：
+
+从中间开始向前后两个方向开始扩散，判断前后邻位是否相同，如果相同则判断邻位的邻位直至不同或超出边界位置，记录前邻位下标以及最大长度，截取字符串。需要考虑回文字符串长度为单双数的差异。
+
+```js
+/**
+ * 假设字符串为 "babad"
+ * 
+ * 以 b 为中心扩散，则左边界出界
+ * 
+ * 以 b，a 作为扩散邻位 b !== a 不符合回文字符串
+ * 
+ * 以 a 为中心 扩散 左邻 b 右邻 b 相等 左邻下标为 0， 回文字符串长度为3
+ * 
+ * 以 a，b 为扩散邻位 a !== b 不符题意
+ * 
+ * 以 b 为中心 扩散 左邻 a 右邻 a 左邻下标为 1 ，回文字符串长度为3
+ * 
+ * 以 b a 为扩散邻位 不符题意
+ * 
+ * 以 a 为中心扩散 左右邻位不等 不符题意
+ * 
+ * 以 a，d 为扩散邻位 不符题意
+ * 
+ * 以 d 为扩散中心 超出右边界
+ * 
+ * 结束截取 回文字符串 "bab"
+ * 
+*/
+var longestPalindrome = s => {
+  let len = s.length;
+  if (len < 2) {
+    return s;
+  }
+
+  let start = 0, maxLength = 1;
+
+  function helper(left, right){
+    while (left >= 0 && right < len && s[left] === s[right]) {
+      let nowLen = right - left + 1;
+      if (nowLen > maxLength) {
+        maxLength = nowLen;
+        start = left;
+      }
+      left--;
+      right++;
+    }
+  }
+
+  for (let i = 0; i < len; i++) {
+    helper(i, i + 1); // 回文字符串长度为双数
+    helper(i - 1, i + 1); // 回文字符串长度为单数
+  }
+
+  return s.substr(start, maxLength);
+}
+```
