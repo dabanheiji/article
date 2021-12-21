@@ -294,3 +294,130 @@ var longestPalindrome = s => {
   return s.substr(start, maxLength);
 }
 ```
+
+## 三数之和
+
+解题思路：
+
+这道题思路比较难想
+
+1. 对数组进行排序，以便我们操作比较
+2. 我们需要两个指针，在对每一项进行遍历的时候一个指针指向当前项的下一项，另一个指针指向数组的最后一项，当前项与两个指针对应的数字进行相加，如果和等于0，符合题意放入答案数组，第一个指针向后移，第二个指针向前移并需要进行重复判断，直至两个指针相同结束开始遍历下一项。
+
+```js
+/**
+* [-1,0,1,2,-1,-4]
+1. 排序
+    [-4, -1, -1, 0, 1, 2]
+
+    遍历第一项 两个指针为start  end
+        当前项 -4
+        start -1
+        end 2
+        三者相加 为 -3 小于0 start加一
+
+        start -1 等于前一项跳过
+        start 0 三者相加为 -2 start 加一
+        start 1 三者相加 -1 start 加一等于end 跳过
+    
+    遍历第二项
+        当前项 -1
+        start -1
+        end 2
+        三者相加为0 将答案 [-1,-1,2]存入答案数组 start加1 end减一
+        start 0
+        end 1
+        三者相加为0 将答案 [-1,0,1] 存入答案 start加一 end减一 start > end 跳过
+
+    遍历第三项
+        当前项 -1 等于上一项跳过
+    
+    遍历第四项
+        重复上述步骤
+*/
+var threeSum = (nums) => {
+  let result = [];
+
+  nums.sort((a,b) => a - b);
+
+  for(let i = 0; i < nums.length - 2; i++) {
+    let start = i + 1, end = nums.length - 1;
+    if(i === 0 || nums[i] !== nums[i - 1]){
+      while (start < end) {
+        let sum = nums[i] + nums[start] + nums[end];
+        if (sum === 0) {
+          result.push([nums[i], nums[start], nums[end]]);
+          start++;
+          end--;
+          while (start < end && nums[start] === nums[start - 1]) {
+            start++;
+          }
+          while (start < end && nums[end] === nums[end + 1]) {
+            end--;
+          }
+        } else if (sum > 0) {
+          end--;
+        } else if (sum < 0) {
+          start++;
+        }
+      }
+    }
+  }
+
+  return result;
+}
+```
+
+## 删除链表倒数第n个节点
+
+解题思路：
+
+这又是一道链表的题目，这道题有一个十分巧妙的解法，我们可以使用双指针，第一个指针指向第一个节点，第二个指针指向第n + 1个节点，然后开始遍历，当第二个指针指向最后一个节点的时候，第一个指针刚好指向倒数第n + 1个节点，这时候让第一个指针的next往后移两次跳过倒数第n个节点即可。
+
+```js
+/**
+1 -> 2 -> 3 -> 4 -> 5
+n = 2
+删除倒数第二项即删除4
+
+指针 i  j
+i 指向 1
+j 指向 n + 1项  3
+
+遍历
+i 2
+j 4
+
+i 3
+j 5 为最后一项此时 i 为删除项的前一项
+
+i.next = i.next.next 即可
+*/
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val, next) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.next = (next===undefined ? null : next)
+ * }
+ */
+var removeNthFromEnd = (head, n) => {
+  const list = new ListNode();
+  list.next = head;
+
+  let n1 = list, n2 = list;
+
+  // 重置 n2 位置
+  for (let i = 0; i < n; i++) {
+    n2 = n2.next;
+  }
+
+  while(n2.next !== null){
+    n1 = n1.next;
+    n2 = n2.next;
+  }
+
+  n1.next = n1.next.next;
+
+  return list.next;
+}
+```
