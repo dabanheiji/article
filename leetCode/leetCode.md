@@ -421,3 +421,133 @@ var removeNthFromEnd = (head, n) => {
   return list.next;
 }
 ```
+
+## 有效的括号
+
+解题思路：
+
+这道题目可以利用栈的特性，将左括号作为键，右括号作为值储存简历对应关系，然后遍历字符串如果是左括号就把对应的右括号存入栈中，此时剩余字符串中下一个右括号必须与取出栈的最后一个括号相等，否则就是不符题意，如果遍历完毕栈中仍存在括号，那么就代表有括号没闭合，不符题意如果遍历完毕栈是空的则符合题意
+
+```js
+/**
+  "{([])}"
+
+  // 建立映射关系
+  {
+    "{": "}",
+    "[": "]",
+    "(": ")",
+  }
+
+  遍历
+  第一项
+    在键中存在，将值存入栈
+    栈 ["}"]
+  
+  第二项
+    在键中存在，将值存入栈
+    栈 ["}", ")"]
+  
+  第三项
+    在键中存在，将值存入栈
+    栈 ["}", ")", "]"]
+  
+  第四项
+    键中不存在，因为栈中最后一项是最后出现的左括号的配对项，所以从栈中取出与之比较 相等
+    栈 ["}", ")"]
+  
+  第五项
+    键中不存在，取出最后一项比较 相等
+    栈 ["}"]
+  
+  第六项
+    键中不存在 取出最后一项比较 相等
+    栈 []
+  
+  栈长度为0则代表所有括号都有配对，符合题意
+*/
+function isValid(s) {
+  // 建立映射关系
+  const map = new Map();
+  map.set('(', ')')
+  map.set('[', ']')
+  map.set('{', '}')
+
+  // 将数组当成我们的栈
+  let stack = [];
+
+  for (let i = 0, len = s.length; i < len; i++) {
+    if (map.has(s[i])) {
+      stack.push(map.get(s[i]));
+    } else {
+      if (stack.pop() !== s[i]) {
+        return false
+      }
+    }
+  }
+
+  if (stack.length) {
+    return false
+  }
+
+  return true
+}
+```
+
+## 合并两个有序链表
+
+解题思路：
+
+将两个链表的每一项比较排序，直至一个链表结束，然后将另一个链表剩余部分放入排好序的链表中。
+
+```js
+/*
+1 -> 2 -> 4
+1 -> 3 -> 5 -> 6
+
+比较
+1 等于 1 前两个顺序无所谓
+1 -> 1
+
+2 小于 3 将 3 放入 2后
+1 -> 1 -> 2 -> 3
+
+4小于5 将5 放入 4 后
+1 -> 1 -> 2 -> 3 -> 4 -> 5
+
+链表1已经结束，将链表2剩余部分放入排序链表之后
+1 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6
+*/
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val, next) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.next = (next===undefined ? null : next)
+ * }
+ */
+function mergeTwoLists(l1, l2) {
+  let dummy = new ListNode();
+  let curr = dummy;
+
+  while (l1.val !== null && l2.val !== null) {
+    if (l1.val > l2.val) {
+      curr.next = l2;
+      l2 = l2.next;
+    } else {
+      curr.next = l1;
+      l1 = l1.next;
+    }
+    curr = curr.next;
+  }
+
+  if (l1.val) {
+    curr.next = l1;
+  }
+
+  if (l2.val) {
+    curr.next = l2;
+  }
+
+  return dummy.next;
+}
+```
