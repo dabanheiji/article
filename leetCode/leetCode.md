@@ -551,3 +551,107 @@ function mergeTwoLists(l1, l2) {
   return dummy.next;
 }
 ```
+
+## 两两交换链表节点
+
+解题思路：
+
+0 -> 1 -> 2 -> 3
+
+假设我们交换1和2个节点的位置，那么我们需要做下面步骤
+
+1. 让0 指向 2
+2. 让1 指向 2 的后一个节点 即 3
+3. 让2 指向 1
+4. 将指针移至1
+
+然后我们一直重复这个步骤即可
+
+```js
+/*
+1 -> 2 -> 3 -> 4
+
+我们互换两个相邻节点的位置，那么我们需要获取这两个节点的前一个节点， 所以我们需要先创建一个0节点
+0 -> 1 -> 2 -> 3 -> 4
+
+1. 让0 指向 2
+2. 让1 指向 2 的后一个节点 即 3
+3. 让2 指向 1
+4. 将指针移至1
+
+0 -> 2 -> 1 -> 3 -> 4
+
+1. 让1 指向 4
+2. 让4 指向 3 的后一个节点 即 null
+3. 让4 指向 3
+4. 将指针移至3
+
+0 -> 2 -> 1 -> 4 -> 3
+*/
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val, next) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.next = (next===undefined ? null : next)
+ * }
+ */
+function swapPairs(head) {
+  const dummy = new ListNode();
+  dummy.next = head;
+  let current = dummy;
+
+  while (current.next !== null && current.next.next !== null) {
+    let n1 = current.next;
+    let n2 = current.next.next;
+    current.next = n2;
+    n1.next = n2.next;
+    n2.next = n1;
+    current = n1;
+  }
+
+  return dummy.next;
+}
+```
+
+## 字母异位词分组
+
+解题思路：
+
+这道题的解题思路是让使用字母和每个字母相同的单词能生成一个相同的key，然后将这些单词放入数组中作为value建立映射关系，最后依次放入结果数组中去。
+
+```js
+/*
+  1. 对入参单词数组进行遍历，对每一个单词都生成一个长度为26的数组，每个数组对应该字母出现的次数
+  2. 将数组转换为字符串作为key， 设置一个数组放置当前字符串作为value，后续再出现同样的key代表是字母异位词，就将当前单词添加进value中
+  3.将建立的映射关系中所有value添加至结果数组中返回
+*/
+function groupAnagrams(strs) {
+  if(strs.length === 0) {
+    return [];
+  }
+
+  const map = new Map();
+
+  for (const str of strs) {
+    const keyArr = Array(26).fill(0);
+    for (let i = 0, len = str.length; i < len; i++) {
+      const asi = str.charCodeAt(i) - 97; // a的ASCII码为97，减去97后正好对应数组的下标
+      keyArr[asi] += 1;
+    }
+    const key = keyArr.join('-');
+    if (map.has(key)) {
+      map.set(key, [...map.get(key), str])
+    } else {
+      map.set(key, [str])
+    }
+  }
+
+  const result = [];
+
+  for (const [_, v] of map) {
+    result.push(v)
+  }
+
+  return result;
+}
+```
