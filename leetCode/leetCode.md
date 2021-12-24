@@ -655,3 +655,138 @@ function groupAnagrams(strs) {
   return result;
 }
 ```
+
+## 最大子数组和
+
+解题思路：
+
+```js
+/*
+[-2,1,-3,4,-1,2,1,-5,4]
+
+将每一项都映射成到当前位置最大的和，放入另一个数组
+var maxSum = []
+
+第一项
+-2
+maxSum [-2]
+
+第二项
+1
+与前一项在和数组中的数相加，与当前值比较 -2 + 1 < 1，到当前为止最大和为1，后续都重复这个比较
+maxSum [-2, 1]
+
+第三项
+-3 
+-3 + 1  = -2 > -3
+maxSum [-2, 1, -2]
+
+第四项
+4
+4 + -2 = 2 < 4
+第四项位置最大和为4
+maxSum [-2, 1, -2, 4]
+
+第五项
+-1
+4 + -1 = 3 > -1
+maxSum [-2, 1, -2, 4, 3]
+
+第六项
+2
+3 + 2 = 5 > 2
+maxSum [-2, 1, -2, 4, 3, 5]
+
+第七项
+1
+5 + 1 = 6 > 1
+maxSum [-2, 1, -2, 4, 3, 5, 6]
+
+第八项
+-5
+6 + -5 = 1 > -5
+maxSum [-2, 1, -2, 4, 3, 5, 6, 1]
+
+第九项
+4
+1 + 4 = 5 > 4
+maxSum [-2, 1, -2, 4, 3, 5, 6, 1, 4]
+
+取出maxSum中最大数 6
+*/
+function maxSubArray(nums) {
+  let memo = [], max = nums[0];
+  memo[0] = nums[0];
+
+  for(let i = 1, len = nums.length; i < len; i++) {
+    memo[i] = Math.max(nums[i] + memo[i - 1], nums[i]);
+  }
+
+  max = Math.max(...memo);
+
+  return max;
+}
+```
+
+## 螺旋矩阵
+
+解题思路：
+
+这道题目比较朴实无华，按照螺旋顺序走下去依次将每一项放入结果数组即可。
+
+```js
+/*
+[1, 2, 3],
+[4, 5, 6],
+[7, 8, 9],
+
+顺序是 右 下 左 上
+走完右 需要将上边界加1
+走完下 需要将右边界减1
+走完左 需要将下边界减1
+走完上 需要将左边界加1
+依次遍历
+*/
+function spiralOrder(matrix) {
+  if (matrix.length === 0) {
+    return [];
+  }
+
+  let left = 0, 
+      top = 0, 
+      right = matrix[0].length - 1, 
+      bottom = matrix.length - 1;
+  
+  let direction = 'right', result = [];
+
+  while (left <= right && top <= bottom) {
+    if (direction === 'right') {
+      for (let i = left; i <= right; i++) {
+        result.push(matrix[top][i])
+      }
+      top++;
+      direction = 'down';
+    } else if (direction === 'down') {
+      for (let i = top; i <= bottom; i++) {
+        result.push(matrix[i][right])
+      }
+      right--;
+      direction = 'left'
+    } else if (direction === 'left') {
+      for (let i = right; i >= left; i--) {
+        result.push(matrix[bottom][i])
+      }
+      bottom--;
+      direction = 'up'
+    } else if (direction === 'up') {
+      for (let i = bottom; i >= top; i--) {
+        result.push(matrix[i][left])
+      }
+      left++;
+      direction = 'right'
+    }
+  }
+
+  return result;
+}
+```
