@@ -790,3 +790,112 @@ function spiralOrder(matrix) {
   return result;
 }
 ```
+
+## 跳跃游戏
+
+解题思路：
+
+这道题的解题方法比较多，可以使用动态规划也可以使用贪心算法，而动态规划又可以分为`top-down`以及`bottom-up`两种写法
+
+### 动态规划top-down解法
+
+```js
+/*
+top-down;
+我们需要一个另一个数组去记录原数组中每一项是否能达到终点
+如果能 则用 1表示， 不能用-1表示， 未知用0表示
+所以第一步是需要创建一个等长的数组并且全部填充为0
+因为最后一项是终点，所以我们创建的数组最后一项我们也需要设置为1
+top-down的写法我们需要将每一种情况都算进去，然后判断当前节点是否可行，需要用到递归
+一个节点能走的路中，只要有一条路能走通，那么这个节点就是ok的，并且前面的节点只要能走到ok节点，那么这个节点就也是ok的
+对每种情况进行递归，在递归中计算每一情况即可
+*/
+function canJump(nums) {
+  const total = nums.length;
+  const memo = Array(total).fill(0);
+  memo[total - 1] = 1; // 最后一位是终点，是ok节点
+
+  function jump(position) {
+    // 如果当前节点是ok节点之间返回true，是bad节点返回false
+    if (memo[position] === 1) {
+      return true;
+    } else if (memo[position] === -1) {
+      return false
+    }
+
+    // 判断当前节点o不ok
+    // 防止超过数组长度，出现越界问题
+    const maxJump = Math.min(position + nums[position], total - 1);
+
+    // 遍历当前节点能走的所有道路
+    for (let i = position + 1; i <= maxJump; i++) {
+      // 如果有一条路走的通，证明当前节点ok，返回true
+      const result = jump(i);
+      if (result) {
+        memo[position] = 1;
+        return true
+      }
+    }
+
+    // 走到这里代表这个节点所有路都走不通，返回false
+    memo[position] = -1;
+    return false;
+  }
+
+  // 我们只需要看第0项能不能走到终点
+  return jump(0);
+}
+```
+
+### 动态规划bottom-up解法
+
+```js
+/*
+bottom-up;
+上面的top-down是从前往后去排查的，而bottom则是从后往前去走；
+我们同样需要创建一个记录各个节点状态的数组，最后一位是ok的
+然后如果倒数第二位也是ok的的话，那么我们只需要判断其他节点能不能到倒数第二位就可以了
+*/
+function canJump(nums) {
+  const total = nums.length;
+  const memo = Array(total).fill(0);
+  memo[total - 1] = 1;
+
+  // 因为最后一位必定是ok的，所以这里从倒数第二位开始
+  for (let i = total - 2; i >= 0; i--) {
+    // 最大的跳跃次数，防止越界
+    const maxJump = Math.min(i + nums[i], total - 1);
+    for (let j = i + 1; j <= maxJump; j++) {
+      // 如果当前节点下有一条路走得通，就更新当前节点为ok
+      if (memo[j] === 1) {
+        memo[i] = 1;
+        break;
+      }
+    }
+  }
+
+  return memo[0] === 1;
+}
+```
+
+### 贪心算法解法
+
+```js
+/*
+其实解这道题有一个很重要的思想，只要这个节点是ok的，那么能跳到这个节点的节点也是ok的，贪心算法就是我们从后往前找最靠前的能到终点的节点，如果这个节点是第一个，那么就返回true
+*/
+function canJump(nums) {
+  const total = nums.length;
+  let minCanJumpNode = total - 1;
+
+  for (let i = total - 1; i >= 0; i--) {
+    const maxJump = i + nums[i]; // 当前节点能跳跃的最大步数
+    // 能跳跃的最大步数如果大于最小成功节点的下标则能代表当前节点也是成功节点，更新最小成功节点为当前下标
+    if (maxJump >= minCanJumpNode) {
+      minCanJumpNode = i;
+    }
+  }
+
+  return minCanJumpNode === 0;
+}
+```
