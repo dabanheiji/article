@@ -899,3 +899,66 @@ function canJump(nums) {
   return minCanJumpNode === 0;
 }
 ```
+
+## 合并区间
+
+解题思路：
+
+将数组针对第一项进行排序，排序之后，记录当前合并的区间，如果后一项的第一项比当前合并的区间的后一项小，则说明可以合并，否则将当前合并的区间存入结果数组，重新创建合并区间
+
+```js
+function merge(intervals) {
+  if (intervals.length < 2) {
+    return intervals;
+  }
+
+  intervals.sort((a, b) => a[0] - b[0]);
+
+  let result = [], curr = intervals[0];
+
+  for(let interval of intervals) {
+    if(interval[0] <= curr[1]) {
+      curr[1] = Math.max(interval[1], curr[1]);
+    } else {
+      result.push(curr);
+      curr = interval;
+    }
+  }
+
+  if (curr.length > 0) {
+    result.push(curr);
+  }
+
+  return result;
+}
+```
+
+## 插入区间
+
+解题思路：
+
+将新区间push进原数组排序，然后执行上题步骤
+
+```js
+var insert = function(intervals, newInterval) {
+  intervals.push(newInterval);
+  intervals.sort((a, b) => a[0] - b[0]);
+
+  let result = [], curr = intervals[0];
+
+  for(let interval of intervals) {
+    if (curr[1] >= interval[0]) {
+      curr[1] = Math.max(curr[1], interval[1])
+    } else {
+      result.push(curr);
+      curr = interval;
+    }
+  }
+
+  if(curr.length) {
+    result.push(curr);
+  }
+
+  return result;
+}
+```
