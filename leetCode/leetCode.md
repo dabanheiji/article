@@ -962,3 +962,112 @@ var insert = function(intervals, newInterval) {
   return result;
 }
 ```
+
+## 不同路径
+
+解题思路：
+
+这道题我们可以将格子看作数组中的一个元素，然后我们可以将地图转换成一个二维数组，数组每个元素就是到达自身的路径条数，然后让我们计算某个位置的值。
+
+```js
+/*
+m = 3, n = 7;
+等价于
+[
+  [1, 1, 1, 1, 1, 1, 1],
+  [1, x, x, x, x, x, x],
+  [1, x, x, x, x, x, ?]
+]
+
+这道题我们可以看作求 ? 位置的数是多少的问题
+首先我们可以确定的是第一条数组的每一项都是1
+并且每个数组的第一项都是1
+然后其他格子中，每个格子的数应该等于这个位置上面一个位置与左边一个位置的和
+即：
+[
+  [1, 1, 1, 1,  1,  1,  1],
+  [1, 2, 3, 4,  5,  6,  7],
+  [1, 3, 6, 10, 15, 21, 28]
+]
+*/
+function uniquePaths(m, n) {
+  const memo = [];
+  for(let i = 0; i < m; i++) {
+    memo.push([])
+  }
+
+  for(let row = 0; row < m; row++) {
+    memo[row][0] = 1;
+  }
+
+  for(let col = 0; col < n; col++) {
+    memo[0][col] = 1;
+  }
+
+  for(let row = 1; row < m; row++) {
+    for(let col = 1; col < n; col++) {
+      memo[row][col] = memo[row - 1][col] + memo[row][col - 1];
+    }
+  }
+
+  return memo[m - 1][n - 1];
+}
+```
+
+## 加一
+
+解题思路：
+
+这道题十分简单，直接看代码即可
+
+```js
+function plusOne(digits) {
+  let carry = 1;
+
+  for(let i = digits.length - 1; i >= 0; i--) {
+    let sum = digits[i] + carry;
+    digits[i] = sum % 10;
+    carry = Math.floor(sum / 10);
+  }
+
+  if(carry) {
+    digits.unshift(carry);
+  }
+
+  return digits;
+}
+
+// 或者
+var plusOne = function(digits) {
+  for(let i = digits.length - 1; i >= 0; i--) {
+    if(digits[i] === 9) {
+      digits[i] = 0;
+    } else {
+      digits[i]++;
+      return digits
+    }
+  }
+
+  digits.unshift(1);
+  return digits;
+};
+```
+
+## 爬楼梯
+
+解题思路：
+
+这道题第一个台阶只有一种走法，第二个台阶只有两种走法，因为最多一次只能走两步，所以第三个台阶只能从第一个台阶走两步，或者从第二个台阶走一步，即符合斐波拉且，实则是在求斐波拉且的第n项
+
+```js
+function climbStairs(n) {
+  let memo = [];
+  memo[1] = 1;
+  memo[2] = 2;
+  for(let i = 3; i <= n; i++) {
+    memo[i] = memo[i-1] + memo[i-2];
+  }
+
+  return memo[n];
+}
+```
