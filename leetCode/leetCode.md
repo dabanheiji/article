@@ -1071,3 +1071,90 @@ function climbStairs(n) {
   return memo[n];
 }
 ```
+
+## 矩阵置零
+
+解题思路：
+
+如果可以使用新的数组那么本题将会很简单，但是题目上限制了不能开辟新的数组，所以有些麻烦，本题解题思路非常的长需要记住以下步骤：
+
+1. 判断矩阵第一行和第一列有没有0，分别用两个变量储存
+2. 从第二行第二列开始对矩阵进行遍历，如果当前位置为0，则将当前行的第一列与当前列的第一行设置为0
+3. 再次遍历矩阵，如果当前行第一列是0或者当前列第一行是0，则将此位置设置为0
+4. 判断第一步储存的状态，如果第一行存在0将第一行全部设置为0，判断第一列是否为0，如果是将第一列全部设置为0
+
+```js
+function setZeroes(matrix) {
+  let firstRowHasZero = false;
+  let firstColHasZero = false;
+
+  // 1.
+  for(let i = 0; i < matrix.length; i++) {
+    if(matrix[i][0] === 0) {
+      firstColHasZero = true;
+    }
+  }
+
+  for(let i = 0; i < matrix[0].length; i++) {
+    if(matrix[0][i] === 0) {
+      firstRowHasZero = true;
+    }
+  }
+
+  // 2. 
+  for(let row = 1; row < matrix.length; row++) {
+    for(let col = 1; col < matrix[0].length; col++) {
+      if(matrix[row][col] === 0) {
+        matrix[row][0] = 0;
+        matrix[0][col] = 0;
+      }
+    }
+  }
+
+  // 3. 
+  for(let row = 1; row < matrix.length; row++) {
+    for(let col = 1; col < matrix[0].length; col++) {
+      if(matrix[row][0] === 0 || matrix[0][col] === 0) {
+        matrix[row][col] = 0;
+      }
+    }
+  }
+
+  // 4. 
+  if(firstRowHasZero) {
+    for(let i = 0; i < matrix[0].length; i++) {
+      matrix[0][i] = 0;
+    }
+  }
+
+  if(firstColHasZero) {
+    for(let i = 0; i < matrix.length; i++) {
+      matrix[i][0] = 0;
+    }
+  }
+
+  return matrix;
+}
+```
+
+##  删除排序链表中的重复元素
+
+解题思路：
+
+这道题目是比较简单的，因为给我们的是一个有序的链表，所以处理起来非常方便，我们只需要对链表进行遍历，判断当前节点的值是否等于下一节点的值，如果相等就删除下一个节点直至遍历完毕即可
+
+```js
+function deleteDuplicates(head) {
+  let curr = head;
+
+  while(curr && curr.next) {
+    if(curr.val === curr.next.val) {
+      curr.next = curr.next.next;
+    } else{
+      curr = curr.next;
+    }
+  }
+
+  return head;
+}
+```
