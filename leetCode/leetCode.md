@@ -1158,3 +1158,101 @@ function deleteDuplicates(head) {
   return head;
 }
 ```
+
+## 反转链表
+
+解题思路：
+
+因为单向链表是不可逆的，所以我们如果直接将当前节点的指针修改向前一个节点，那么则会丢失下一个节点，所以这时候我们就需要一个新的指针去保存下一个节点。所以这里需要使用三个指针。
+
+```js
+/*
+  prev curr next
+
+  反转需要牢记下面四步
+  1. next = curr.next;
+  2. curr.next = prev;
+  3. prev = curr;
+  4. curr = next;
+*/
+function reverseList(head) {
+  let prev = null;
+  let curr = head, next;
+
+  while(curr) {
+    next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+  }
+
+  return prev;
+}
+```
+
+然而在JavaScript中我们可以使用解构赋值，通过解构赋值的方式可以帮助我们节省去next这个指针
+
+```js
+function reverseList(head) {
+  let prev = null;
+  let curr = head;
+
+  while(curr) {
+    [prev, curr.next, curr] = [curr, prev, curr.next]
+  }
+
+  return prev;
+}
+```
+
+## 反转链表2
+
+解题思路：
+
+这道题和上道反转链表十分相似，但是多了一点，就是反转中间的部分链表之后如何将中间的这部分与两边的部分连接起来，所以这里就又在上题的基础上又需要多使用两个指针。
+
+```js
+/*
+1 -> 2 -> 3 -> 4 -> 5
+2,4
+
+1 -> 4 -> 3 -> 2 -> 5
+
+如果按照反转链表1的思路会得到
+
+1  2 <- 3 <- 4  5
+
+然后在连接 1 5的时候就会异常吃力
+我们在按照反转链表1的方法反转后最后curr指针会在5的位置，prev会在4的位置
+所以我们还需要知道1和2的位置，因此我们在反转前需要使用另外两个指针指向1和2
+
+最后我们需要注意一种特殊情况，如果反转的起始位置是1的话那么就会head就会改变，这时候要记得修改head
+*/
+function reverseBetween(head, left, right) {
+  let prev = null, curr = head, next = null;
+
+  for(let i = 1; i < left; i++) {
+    prev = curr;
+    curr = curr.next;
+  }
+
+  const prev1 = prev, curr1 = curr;
+
+  for(let i = left; i <= right; i++) {
+    next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+  }
+
+  if(prev1) {
+    prev1.next = prev
+  } else {
+    head = prev
+  }
+
+  curr1.next = curr;
+
+  return head
+}
+```
