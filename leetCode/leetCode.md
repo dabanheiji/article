@@ -1256,3 +1256,118 @@ function reverseBetween(head, left, right) {
   return head
 }
 ```
+
+## 买卖股票的最佳时机
+
+解题思路：
+
+这道题让计算最大利润，那么获取最大利润的时机一定在某个波峰，而每个波峰的最大利润都是当前波峰减去左侧最低的波谷，也就是数组左侧的最小值，所以只需要计算每个位置距离自己左侧最低点的值取最大即可。
+
+```js
+function maxProfit(prices) {
+  if(prices.length === 0) {
+    return 0;
+  }
+
+  let maxProfit = 0, minPrice = prices[0];
+
+  for(let i = 0; i < prices.length; i++) {
+    minPrice = Math.min(minPrice, prices[i]);
+    maxProfit = Math.max(maxProfit, prices[i] - minPrice);
+  }
+
+  return maxProfit;
+}
+```
+
+## 买卖股票的最佳时机2
+
+解题思路：
+
+这道题针对上一题解除了只能进行一次交易的限制，那么最大利润其实非常容易想明白，就是所有的波谷到波峰的差距的总和，这道题有两种解法
+
+```js
+/*
+  解法一： 计算每个波谷到波峰的差价相加
+*/
+function maxProfit(prices) {
+  if(prices.length === 0) {
+    return 0;
+  }
+
+  let profit = 0, min = prices[0], max = prices[0];
+
+  let i = 0;
+
+  while (i < prices.length - 1) {
+    while(i < prices.length - 1 && prices[i] >= prices[i + 1]) {
+      i++
+    }
+    min = prices[i];
+    while(i < prices.length - 1 && prices[i] <= prices[i + 1]) {
+      i++
+    }
+    max = prices[i];
+    profit += max - min;
+  }
+
+  return profit;
+}
+```
+
+解法2： 贪心
+
+```js
+function maxProfit(prices) {
+  if(prices.length === 0) {
+    return 0;
+  }
+
+  let profit = 0;
+
+  for(let i = 0; i < prices.length - 1; i++) {
+    if(prices[i] < prices[i + 1]) {
+      profit += prices[i + 1] - prices[i];
+    }
+  }
+
+  return profit;
+}
+```
+
+## 整数反转
+
+解题思路：
+
+这道题目其实很简单，最暴力的解法是讲数字变成字符串，然后反转，这里笔者的思路如下：
+
+1. 将这个数与10的余数取出来，将余数使用result变量储存
+2. 将这个数减去1中余数并除以10
+3. 继续取余并将result乘以10之后加上新余数，反复至这个数为0为止
+
+```js
+/*
+x = 123
+
+result = 0
+1. 与10取余  余数为3  result = 3
+2. 将x减去余数并除以10  (123 - 3) / 10 = 12
+3. 继续取余 余数为2 result乘以10再加上余数 3 * 10 + 2 = 32
+重复
+*/
+function reverse(x) {
+  let result = 0;
+
+  while(x !== 0) {
+    result = (result * 10) + (x % 10);
+    x -= x % 10;
+    x /= 10;
+  }
+
+  if(result > Math.pow(2, 31) || result < Math.pow(-2, 31) - 1) {
+    return 0;
+  }
+
+  return result;
+}
+```
