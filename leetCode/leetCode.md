@@ -1371,3 +1371,65 @@ function reverse(x) {
   return result;
 }
 ```
+
+## 回文数
+
+解题思路：
+
+这道题笔者的思路是将数字转换成字符串，然后去判断
+
+```js
+var isPalindrome = function(x) {
+  if(x < 0) {
+    return false;
+  }
+
+  x = String(x);
+  let left = 0, right = x.length - 1;
+
+  while(x[left] === x[right] && left < right) {
+    left++;
+    right--;
+  }
+
+  if(left === right || left === right + 1) {
+    return true;
+  }
+
+  return false;
+}
+
+// 或更简单的
+
+var isPalindrome = function(x) {
+  return x.toString() === x.toString().split('').reverse().join('');
+}
+```
+
+## 盛最多水的容器
+
+解题思路：
+
+这道题面积是由下标差与较小的高相乘得到的，所以我们可以移动较小的边去计算面积会不会增大
+
+```js
+function maxArea(height) {
+  let maxArea = 0;
+  let left = 0, right = height.length - 1;
+
+  while(left < right) {
+    maxArea = Math.max(
+      maxArea,
+      Math.min(height[left], height[right]) * (right - left)
+    );
+
+    if(height[left] < height[right]) {
+      left++
+    } else {
+      right--
+    }
+  }
+
+  return maxArea
+}
+```
