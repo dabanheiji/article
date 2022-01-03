@@ -1433,3 +1433,86 @@ function maxArea(height) {
   return maxArea
 }
 ```
+
+## 整数转罗马数字
+
+解题思路：
+先把5，50，500这几个特殊的数用键值对存，然后其他数与对于符号分别放在两个数组里；
+
+1. 开始遍历数组，要是**数字小于当数组前项**，获取到数字与当前项的商
+2. 商的可能性为 1-9 （商为0在第一步中已经被过滤了），逐一分析
+  - 商为1-3 的情况一样，把当前项对应的符号重复1-3遍即可
+  - 商为4 把数组当前项乘以5为键获取map中对应的符号，然后左侧放上当前项对应的符号
+  - 商为9 数组前一项对应的符号，左侧放上当前项对应的符号
+  - 商为5 以数组当前项乘以5为键从map中查找对应符号
+  - 商为6-8 把数组当前项乘以5为键获取map中对应的符号，然后右侧放上当前项对应的符号重复商-5遍
+3. 每轮遍历结束前需把当前拼好的数字减去。
+
+```js
+var intToRoman = function(num) {
+  const map = new Map();
+
+  map.set(5, 'V');
+  map.set(50, 'L');
+  map.set(500, 'D');
+
+  const nums = [1000, 100, 10, 1];
+  const symbols = ['M', 'C', 'X', 'I'];
+
+  let result = '';
+
+  for(let i = 0; i < nums.length; i++) {
+    if(num >= nums[i]) {
+      let count = Math.floor(num / nums[i]);
+
+      if(count < 4) {
+        result += symbols[i].repeat(count);
+      } else if(count === 4) {
+        result += `${symbols[i]}${map.get(nums[i] * 5)}`;
+      } else if(count === 5) {
+        result += map.get(nums[i] * 5);
+      } else if(count < 9) {
+        result += `${map.get(nums[i] * 5)}${symbols[i].repeat(count - 5)}`;
+      } else {
+        result += `${symbols[i]}${symbols[i - 1]}`;
+      }
+
+      num -= nums[i] * count
+    }
+  }
+
+  return result;
+}
+```
+
+## 罗马数字转数字
+
+解题思路：
+先简历键值对关系，对字符串从右往左遍历，获取当前位对应的数字，与上一位的数字，要是当前位的数字小于上一位则表示这是9或4，就减去当前位，否则加当前位，口齿不麻利，大概是这个意思。
+
+```js
+var romanToInt = function(s) {
+  const map = new Map();
+  map.set('I', 1);
+  map.set('V', 5);
+  map.set('X', 10);
+  map.set('L', 50);
+  map.set('C', 100);
+  map.set('D', 500);
+  map.set('M', 1000);
+  
+  let prev = 0, res = 0;
+
+  for(let i = s.length - 1; i >= 0; i--) {
+    const num = map.get(s[i]);
+    if(num < prev) {
+      res -= num;
+    } else {
+      res += num;
+    }
+    prev = num;
+  }
+
+  return res;
+}
+```
