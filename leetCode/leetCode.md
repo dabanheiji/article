@@ -1516,3 +1516,96 @@ var romanToInt = function(s) {
   return res;
 }
 ```
+
+## 最长公共前缀
+
+解题思路：
+
+暂时使用暴力解法，待有更好的办法后继续补充
+
+```js
+var longestCommonPrefix = function(strs) {
+  if(strs.length < 1) {
+    return '';
+  }
+
+  let prefix = '';
+
+  let s = strs[0], i = 0;
+
+  while(i < s.length) {
+    for(let str of strs) {
+      if(str[i] !== s[i]) {
+        return prefix;
+      }
+    }
+
+    prefix += s[i];
+    i++;
+  }
+
+  return prefix;
+}
+```
+
+## 电话号码的字母组合
+
+解题思路：
+
+组合就是上一个组合的每一项分别与下一字母对应的所有项拼接而成
+
+即`['a']` 与 `['b', 'c']`则需要把b，c分别加在a后结果为`['ab', 'ac']`，
+想明白这一点就比较好解决了，我们让结果数组默认为第一个数字对应的字母然后使每个字母都拼接商下一项对应的字母们即可。
+
+```js
+var letterCombinations = function(digits) {
+  if(digits.length === 0) {
+    return [];
+  }
+
+  const map = new Map();
+  map.set('2', ['a', 'b', 'c']);
+  map.set('3', ['d', 'e', 'f']);
+  map.set('4', ['g', 'h', 'i']);
+  map.set('5', ['j', 'k', 'l']);
+  map.set('6', ['m', 'n', 'o']);
+  map.set('7', ['p', 'q', 'r', 's']);
+  map.set('8', ['t', 'u', 'v']);
+  map.set('9', ['w', 'x', 'y', 'z']);
+
+  let result = map.get(digits[0]);
+
+  for(let i = 1; i < digits.length; i++) {
+    result = result.map(item => {
+      return map.get(digits[i]).map(s => `${item}${s}`)
+    }).flat(2);
+  }
+
+  return result;
+}
+```
+
+## 验证回文串
+
+解题思路：
+
+这道题思路很简单，从第一位与最后一位，使用双指针遍历比较即可，唯一的难点在于转换字符串
+
+```js
+var isPalindrome = function(s) {
+  s = s.toLocaleLowerCase().replace(/[\W_]/g, '');
+
+  let left = 0, right = s.length - 1;
+
+  while(left < right) {
+    if(s[left] === s[right]) {
+      left++;
+      right--;
+    } else {
+      return false;
+    }
+  }
+
+  return true
+}
+```
