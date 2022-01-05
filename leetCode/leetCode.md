@@ -1609,3 +1609,141 @@ var isPalindrome = function(s) {
   return true
 }
 ```
+
+## 加油站
+
+思路：
+
+遍历数组，如果当前点不行则从下一点开始，因为有结果的话结果只有一个，利用此规则来完成计算。
+
+```js
+var canCompleteCircuit = function(gas, cost) {
+  const totalGas = gas.reduce((a, b) => a + b);
+  const totalCost = cost.reduce((a, b) => a + b);
+
+  if(totalGas < totalCost) {
+    return -1;
+  }
+  
+  let currentGas = 0;
+  let start = 0;
+
+  for(let i = 0; i < gas.length; i++) {
+    currentGas = currentGas + gas[i] - cost[i];
+    if(currentGas < 0) {
+      currentGas = 0;
+      start = i + 1;
+    }
+  }
+
+  return start;
+};
+```
+
+## 最接近的三数之和
+
+思路：
+
+对数组排序，然后使用双指针去计算。
+
+```js
+var threeSumClosest = function(nums, target) {
+  let result;
+  if(nums.length < 3) {
+    result = 0;
+    for(let num in nums) {
+      result += num;
+    }
+    return result;
+  }
+
+  nums.sort((a,b) => a - b);
+
+  for(let i = 0; i < nums.length - 2; i++) {
+    let start = i + 1, end = nums.length - 1;
+    while(start < end) {
+      const sum = nums[i] + nums[start] + nums[end];
+      if(result === undefined) {
+        result = sum;
+      }
+
+      if(Math.abs(result - target) > Math.abs(sum - target)) {
+        result = sum;
+      }
+
+      if(sum > target) {
+        end--;
+      } else {
+        start++;
+      }
+    }
+  }
+
+  return result;
+};
+```
+
+## 删除有序数组重复项
+
+思路：
+
+简单的遍历，没什么好说的，使用了splice这个暴力解法
+
+```js
+var removeDuplicates = function(nums) {
+
+  for(let i = 0; i < nums.length; i++) {
+    let j = i + 1;
+    if(nums[i] === nums[j]) {
+      nums.splice(i, 1);
+      i--;
+    }
+  }
+
+  return nums.length;
+};
+```
+
+## 移除元素
+
+思路：
+
+遍历判断和val相同移除即可
+
+```js
+var removeElement = function(nums, val) {
+
+  for(let i = 0; i < nums.length; i++) {
+    if(nums[i] === val) {
+      nums.splice(i, 1);
+      i--;
+    }
+  }
+
+  return nums.length;
+};
+```
+
+## 实现 strStr()
+
+思路：
+
+使用了字符串是substr方法，最好的办法应该是手动实现这个方法，比较简单
+
+```js
+var strStr = function(haystack, needle) {
+  if(needle.length === 0) {
+    return 0;
+  }
+
+  let len = needle.length;
+
+  for(let i = 0; i < haystack.length; i++) {
+    if(haystack[i] === needle[0] && haystack.substr(i, len) === needle) {
+      return i;
+    }
+  }
+
+  return -1;
+};
+```
