@@ -1728,7 +1728,7 @@ var removeElement = function(nums, val) {
 
 思路：
 
-使用了字符串是substr方法，最好的办法应该是手动实现这个方法，比较简单
+使用了字符串是substr方法，和indexOf功能一样，实现这个方法比较简单
 
 ```js
 var strStr = function(haystack, needle) {
@@ -1745,5 +1745,110 @@ var strStr = function(haystack, needle) {
   }
 
   return -1;
+};
+```
+
+## 螺旋矩阵2
+
+这道题和螺旋矩阵1的解法大致一样，我们只需要先声明一个二维数组，然后按照顺序将数字填入二维数组即可。
+
+```js
+function generateMatrix(n) {
+  const matrix = [];
+
+  for(let i = 0; i < n; i++) {
+    matrix[i] = [];
+  }
+
+  let left = 0, 
+      top = 0, 
+      right = n - 1, 
+      bottom = n - 1, 
+      direction = 'right',
+      val = 1;
+  
+  while(left <= right && top <= bottom) {
+    if(direction === 'right') {
+      for(let i = left; i <= right; i++) {
+        matrix[top][i] = val;
+        val++;
+      }
+      top++;
+      direction = 'bottom';
+    } else if(direction === 'bottom') {
+      for(let i = top; i <= bottom; i++) {
+        matrix[i][right] = val;
+        val++;
+      }
+      right--;
+      direction = 'left';
+    } else if(direction === 'left') {
+      for(let i = right; i >= left; i--) {
+        matrix[bottom][i] = val;
+        val++;
+      }
+      bottom--;
+      direction = 'top';
+    } else if(direction === 'top') {
+      for(let i = bottom; i >= top; i--) {
+        matrix[i][left] = val;
+        val++;
+      }
+      left++;
+      direction = 'right';
+    }
+  }
+
+  return matrix;
+}
+```
+
+## 最后一个单词的长度
+
+这道题可以使用正则匹配单词然后返回最后一个匹配项的长度即可
+
+```js
+function lengthOfLastWord(s) {
+  const reg = /[a-z|A-Z]+/g;
+  return s.match(reg).pop().length;
+}
+```
+
+## 搜索插入位置
+
+解题思路：
+
+这道题可以直接遍历判断当前项十分大于目标值的暴力解法，不过官方限制了时间复杂度明显是想让我们使用二分法
+
+```js
+// 二分法
+var searchInsert = function(nums, target) {
+  let start = 0, end = nums.length - 1;
+
+  while(start <= end) {
+    let middle = Math.floor((start + end) / 2);
+    if(nums[middle] > target) {
+      end = middle - 1;
+    } else if(nums[middle] < target) {
+      start = middle + 1;
+    } else {
+      return middle;
+    }
+  }
+
+  return end + 1;
+}
+
+// 暴力解法
+var searchInsert = function(nums, target) {
+  let res = 0;
+
+  for(let i = 0; i < nums.length; i++) {
+    if(nums[i] >= target) {
+      return i;
+    }
+  }
+
+  return nums.length;
 };
 ```
