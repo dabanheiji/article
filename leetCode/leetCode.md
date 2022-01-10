@@ -1852,3 +1852,78 @@ var searchInsert = function(nums, target) {
   return nums.length;
 };
 ```
+
+## 句子中的最多单词数
+
+解题思路：
+
+觉得自己的解法比较暴力
+
+```js
+var mostWordsFound = function(sentences) {
+  return sentences.reduce((prev, curr) => Math.max(prev, curr.match(/[a-z|A-Z]+/g).length), 0)
+}
+```
+
+## 环形链表
+
+解题思路：
+
+使用一个快指针和一个慢指针，快指针在链表中一次走两步，慢指针在链表中一次走一步，如果在若干次循环后，快慢指针能够相遇则说明此链表中存在环，因为快慢指针都进入环中之后，因为快指针比慢指针每次多走一步，所以两者之间的距离一次会小于，那么在若干步后就会相遇。
+
+```js
+var hasCycle = function(head) {
+  if(head === null) {
+    return false;
+  }
+  let fast = head, slow = head;
+
+  while(fast.next && fast.next.next) {
+    fast = fast.next.next;
+    slow = slow.next;
+    if(fast === slow) {
+      return true;
+    }
+  }
+
+  return false;
+}
+```
+
+## 环形链表2
+
+解题思路：
+
+首先执行上题步骤先证明有环，确定有环之后将快指针回归起始为止，然后使快慢指针每次都前进一步，两指针相遇点即是环的第一个节点，这个算法可以去了解弗洛伊德算法
+
+```js
+var detectCycle = function(head) {
+  if(head === null) {
+    return null;
+  }
+
+  let fast = head, slow = head, flag = false;
+
+  while(fast.next && fast.next.next) {
+    fast = fast.next.next;
+    slow = slow.next;
+    if(fast === slow) {
+      flag = true;
+      break;
+    }
+  }
+
+  if(!flag) {
+    return null;
+  }
+
+  fast = head;
+
+  while(fast !== slow) {
+    fast = fast.next;
+    slow = slow.next;
+  }
+
+  return fast;
+}
+```
