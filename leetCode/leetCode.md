@@ -1927,3 +1927,29 @@ var detectCycle = function(head) {
   return fast;
 }
 ```
+
+## 乘积最大子数组
+
+解题思路：
+
+本题需要使用动态规划的解法，但是需要两个动态规划数组，一个用于记录最大值，一个用于记录最小值，原因是最小值可能是负数，而如果下一位也是负数的话可能会出现负负得正最小值之间变成最大值的情况。
+
+```js
+var maxProduct = function(nums) {
+  let maxProductMemo = [];
+  let minProductMemo = [];
+  maxProductMemo[0] = nums[0];
+  minProductMemo[0] = nums[0];
+
+  let max = nums[0];
+
+  for(let i = 1; i < nums.length; i++) {
+    maxProductMemo[i] = Math.max(nums[i], maxProductMemo[i - 1] * nums[i], minProductMemo[i - 1] * nums[i]);
+    minProductMemo[i] = Math.min(nums[i], maxProductMemo[i - 1] * nums[i], minProductMemo[i - 1] * nums[i]);
+
+    max = Math.max(max, maxProductMemo[i]);
+  }
+
+  return max;
+}
+```
