@@ -1953,3 +1953,41 @@ var maxProduct = function(nums) {
   return max;
 }
 ```
+
+## 寻找旋转排序数组中的最小值
+
+解题思路：
+
+这道题需要注意是旋转后的排序数组，所以最大值后面的数字就是最小数（未旋转的除外），为了降低时间复杂度，需要使用二分查询
+
+```js
+var findMin = function(nums) {
+  if(nums.length === 1) {
+    return nums[0];
+  }
+
+  let left = 0, right = nums.length - 1;
+
+  if(nums[right] > nums[0]) {
+    return nums[0];
+  }
+
+  while(left < right) {
+    const mid = Math.floor(left + (right - left) / 2);
+
+    if(nums[mid] > nums[mid + 1]) {
+      return nums[mid + 1];
+    }
+
+    if(nums[mid] < nums[mid - 1]) {
+      return nums[mid];
+    }
+
+    if(nums[mid] > nums[left]) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+}
+```
