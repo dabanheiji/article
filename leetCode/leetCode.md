@@ -1991,3 +1991,59 @@ var findMin = function(nums) {
   }
 }
 ```
+
+## 执行操作后的变量值
+
+解题思路：
+
+将这四种运算符号于对应的值储存起来然后依次遍历数组即可。
+
+```js
+var finalValueAfterOperations = function(operations) {
+  let map = new Map();
+  map.set('X++', 1);
+  map.set('++X', 1);
+  map.set('X--', -1);
+  map.set('--X', -1);
+  let result = 0;
+
+  for(let operation of operations) {
+    result += map.get(operation)
+  }
+
+  return result;
+};
+```
+
+## 一维数组的动态和
+
+解题思路：
+
+解题代码如下
+
+```js
+var runningSum = function(nums) {
+  return nums.reduce((prev, curr) => {
+    prev.length ? prev.push(prev[prev.length - 1] + curr) : prev.push(curr);
+    return prev;
+  }, [])
+};
+```
+
+## 数组异或操作
+
+解题思路：
+
+先列出目标数组，然后按题目计算即可
+
+```js
+var xorOperation = function(n, start) {
+  let arr = [];
+
+  for(let i = 0; i < n; i++) {
+    arr[i] = start + 2*i;
+  }
+
+  return arr.reduce((prev, curr) => prev^curr);
+};
+```
