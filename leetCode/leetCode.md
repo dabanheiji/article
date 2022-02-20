@@ -1813,3 +1813,237 @@ function lengthOfLastWord(s) {
   return s.match(reg).pop().length;
 }
 ```
+
+## 搜索插入位置
+
+ 解题思路：
+
+ 这道题可以直接遍历判断当前项十分大于目标值的暴力解法，不过官方限制了时间复杂度明显是想让我们使用二分法
+
+ ```js
+ // 二分法
+ var searchInsert = function(nums, target) {
+   let start = 0, end = nums.length - 1;
+
+   while(start <= end) {
+     let middle = Math.floor((start + end) / 2);
+     if(nums[middle] > target) {
+       end = middle - 1;
+     } else if(nums[middle] < target) {
+       start = middle + 1;
+     } else {
+       return middle;
+     }
+   }
+
+   return end + 1;
+ }
+
+ // 暴力解法
+ var searchInsert = function(nums, target) {
+   let res = 0;
+
+   for(let i = 0; i < nums.length; i++) {
+     if(nums[i] >= target) {
+       return i;
+     }
+   }
+
+   return nums.length;
+ };
+ ```
+
+ ## 句子中的最多单词数
+
+ 解题思路：
+
+ 觉得自己的解法比较暴力
+
+ ```js
+ var mostWordsFound = function(sentences) {
+   return sentences.reduce((prev, curr) => Math.max(prev, curr.match(/[a-z|A-Z]+/g).length), 0)
+ }
+ ```
+
+ ## 环形链表
+
+ 解题思路：
+
+ 使用一个快指针和一个慢指针，快指针在链表中一次走两步，慢指针在链表中一次走一步，如果在若干次循环后，快慢指针能够相遇则说明此链表中存在环，因为快慢指针都进入环中之后，因为快指针比慢指针每次多走一步，所以两者之间的距离一次会小于，那么在若干步后就会相遇。
+
+ ```js
+ var hasCycle = function(head) {
+   if(head === null) {
+     return false;
+   }
+   let fast = head, slow = head;
+
+   while(fast.next && fast.next.next) {
+     fast = fast.next.next;
+     slow = slow.next;
+     if(fast === slow) {
+       return true;
+     }
+   }
+
+   return false;
+ }
+ ```
+
+ ## 环形链表2
+
+ 解题思路：
+
+ 首先执行上题步骤先证明有环，确定有环之后将快指针回归起始为止，然后使快慢指针每次都前进一步，两指针相遇点即是环的第一个节点，这个算法可以去了解弗洛伊德算法
+
+ ```js
+ var detectCycle = function(head) {
+   if(head === null) {
+     return null;
+   }
+
+   let fast = head, slow = head, flag = false;
+
+   while(fast.next && fast.next.next) {
+     fast = fast.next.next;
+     slow = slow.next;
+     if(fast === slow) {
+       flag = true;
+       break;
+     }
+   }
+
+   if(!flag) {
+     return null;
+   }
+
+   fast = head;
+
+   while(fast !== slow) {
+     fast = fast.next;
+     slow = slow.next;
+   }
+
+   return fast;
+ }
+ ```
+
+ ## 乘积最大子数组
+
+ 解题思路：
+
+ 本题需要使用动态规划的解法，但是需要两个动态规划数组，一个用于记录最大值，一个用于记录最小值，原因是最小值可能是负数，而如果下一位也是负数的话可能会出现负负得正最小值之间变成最大值的情况。
+
+ ```js
+ var maxProduct = function(nums) {
+   let maxProductMemo = [];
+   let minProductMemo = [];
+   maxProductMemo[0] = nums[0];
+   minProductMemo[0] = nums[0];
+
+   let max = nums[0];
+
+   for(let i = 1; i < nums.length; i++) {
+     maxProductMemo[i] = Math.max(nums[i], maxProductMemo[i - 1] * nums[i], minProductMemo[i - 1] * nums[i]);
+     minProductMemo[i] = Math.min(nums[i], maxProductMemo[i - 1] * nums[i], minProductMemo[i - 1] * nums[i]);
+
+     max = Math.max(max, maxProductMemo[i]);
+   }
+
+   return max;
+ }
+ ```
+
+ ## 寻找旋转排序数组中的最小值
+
+ 解题思路：
+
+ 这道题需要注意是旋转后的排序数组，所以最大值后面的数字就是最小数（未旋转的除外），为了降低时间复杂度，需要使用二分查询
+
+ ```js
+ var findMin = function(nums) {
+   if(nums.length === 1) {
+     return nums[0];
+   }
+
+   let left = 0, right = nums.length - 1;
+
+   if(nums[right] > nums[0]) {
+     return nums[0];
+   }
+
+   while(left < right) {
+     const mid = Math.floor(left + (right - left) / 2);
+
+     if(nums[mid] > nums[mid + 1]) {
+       return nums[mid + 1];
+     }
+
+     if(nums[mid] < nums[mid - 1]) {
+       return nums[mid];
+     }
+
+     if(nums[mid] > nums[left]) {
+       left = mid + 1;
+     } else {
+       right = mid - 1;
+     }
+   }
+ }
+ ```
+
+ ## 执行操作后的变量值
+
+ 解题思路：
+
+ 将这四种运算符号于对应的值储存起来然后依次遍历数组即可。
+
+ ```js
+ var finalValueAfterOperations = function(operations) {
+   let map = new Map();
+   map.set('X++', 1);
+   map.set('++X', 1);
+   map.set('X--', -1);
+   map.set('--X', -1);
+   let result = 0;
+
+   for(let operation of operations) {
+     result += map.get(operation)
+   }
+
+   return result;
+ };
+ ```
+
+ ## 一维数组的动态和
+
+ 解题思路：
+
+ 解题代码如下
+
+ ```js
+ var runningSum = function(nums) {
+   return nums.reduce((prev, curr) => {
+     prev.length ? prev.push(prev[prev.length - 1] + curr) : prev.push(curr);
+     return prev;
+   }, [])
+ };
+ ```
+
+ ## 数组异或操作
+
+ 解题思路：
+
+ 先列出目标数组，然后按题目计算即可
+
+ ```js
+ var xorOperation = function(n, start) {
+   let arr = [];
+
+   for(let i = 0; i < n; i++) {
+     arr[i] = start + 2*i;
+   }
+
+   return arr.reduce((prev, curr) => prev^curr);
+ };
+ ```
