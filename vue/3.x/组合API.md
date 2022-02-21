@@ -213,7 +213,7 @@ export default {
 
 ```vue
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, toRefs } from 'vue'
 
 // 计数器逻辑
 function useCounter () {
@@ -230,19 +230,20 @@ function useCounter () {
 
 // todolist逻辑
 function useTodoList () {
-  let text = ref('');
-  let list = reactive([]);
+  let data = reactive({
+    text: '',
+    list: []
+  });
   const addItem = () => {
     const item = { id: Date.now(), content: text.value }
-    list.push(item)
-    text.value = '';
+    data.list.push(item)
+    data.text = '';
   }
   const removeItem = (index) => {
-    list.splice(index, 1)
+    data.list.splice(index, 1)
   }
   return {
-    text,
-    list,
+    ...toRefs(data),
     addItem,
     removeItem,
   }
